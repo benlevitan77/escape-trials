@@ -1,16 +1,23 @@
 import { useEffect, useState } from 'react';
 
 const ReflexChallenge = ({ onSuccess, onFail, level }) => {
-  const gridSize = 3 + Math.min(level, 5); // scales to max 8x8
+  const gridSize = 3 + Math.min(level, 5); // scales up
   const [targetIndex, setTargetIndex] = useState(null);
   const [clicked, setClicked] = useState(null);
+  const [timeoutId, setTimeoutId] = useState(null);
 
   useEffect(() => {
     const index = Math.floor(Math.random() * (gridSize * gridSize));
     setTargetIndex(index);
+    const timer = setTimeout(() => {
+      onFail();
+    }, 1000); // 1 second to respond
+    setTimeoutId(timer);
+    return () => clearTimeout(timer);
   }, [gridSize]);
 
   const handleClick = (index) => {
+    clearTimeout(timeoutId);
     setClicked(index);
     if (index === targetIndex) {
       onSuccess();
@@ -21,13 +28,14 @@ const ReflexChallenge = ({ onSuccess, onFail, level }) => {
 
   return (
     <div style={{ textAlign: 'center' }}>
-      <h2>⚡ Click the red square!</h2>
+      <h2>⚡ Click the red square FAST!</h2>
       <div
         style={{
           display: 'grid',
           gridTemplateColumns: `repeat(${gridSize}, 40px)`,
           justifyContent: 'center',
-          gap: '5px'
+          gap: '5px',
+          marginTop: '10px'
         }}
       >
         {Array.from({ length: gridSize * gridSize }).map((_, index) => (
