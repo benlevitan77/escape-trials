@@ -108,6 +108,13 @@ const App = () => {
     setPlayer({ x: nx, y: ny });
   };
 
+  const handleTileClick = (x, y) => {
+    const dx = x - player.x;
+    const dy = y - player.y;
+    const isAdjacent = (Math.abs(dx) + Math.abs(dy) === 1);
+    if (isAdjacent) movePlayer(dx, dy);
+  };
+
   const handleWinChallenge = () => {
     const newMaze = maze.map(row => [...row]);
     newMaze[player.y][player.x] = 'path';
@@ -148,12 +155,34 @@ const App = () => {
 
   const renderTile = (type, x, y) => {
     const isPlayer = player.x === x && player.y === y;
-    if (isPlayer) return '🧍';
-    if (x === goal.x && y === goal.y) return '🚪';
-    if (type === 'wall') return '⬛';
-    if (type === 'path') return '⬜';
-    if (type === 'challenge') return '🟥';
-    return '';
+    const isGoal = x === goal.x && y === goal.y;
+    const isAdjacent = (Math.abs(x - player.x) + Math.abs(y - player.y)) === 1;
+
+    const bg = isPlayer ? '#ffd700' :
+               isGoal ? '#4ade80' :
+               type === 'wall' ? '#111' :
+               type === 'challenge' ? '#f87171' :
+               isAdjacent ? '#93c5fd' : '#e5e7eb';
+
+    const emoji = isPlayer ? '🧍' : isGoal ? '🚪' : type === 'challenge' ? '🟥' : type === 'wall' ? '' : '';
+
+    return (
+      <div
+        className="cell"
+        key={`${x}-${y}`}
+        onClick={() => handleTileClick(x, y)}
+        style={{
+          cursor: isAdjacent ? 'pointer' : 'default',
+          backgroundColor: bg,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: 22,
+        }}
+      >
+        {emoji}
+      </div>
+    );
   };
 
   return (
@@ -184,11 +213,7 @@ const App = () => {
         gridTemplateRows: `repeat(${size}, 40px)`
       }}>
         {maze.flatMap((row, y) =>
-          row.map((cell, x) => (
-            <div className="cell" key={`${x}-${y}`}>
-              {renderTile(cell, x, y)}
-            </div>
-          ))
+          row.map((cell, x) => renderTile(cell, x, y))
         )}
       </div>
 
